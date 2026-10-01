@@ -1,0 +1,184 @@
+body{
+    margin: 0;
+    background: #0000FF;
+    color: #ffffff;
+    font-family: Helvetica, sans-serif;
+}
+
+.brand,
+.navigation {
+    font: inherit;
+    position: fixed;
+    top: 20px;
+    z-index: 10;
+    display: flex;
+}
+
+.brand { left: 25px; }
+.navigation {
+    left: auto;
+    right: 25px;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+/* Styles Hauptbuttons */
+.crs-btn, 
+.menu-btn {
+    font: inherit;
+    color: #ffffff;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: -0.1em;
+    display: inline-block;
+    transition: color 0.3s ease;
+}
+
+/* HOVER & AKTIV Effekte */
+.crs-btn:hover,
+.menu-btn:hover {
+    color: #FF0000;
+}
+
+/* wenn MENU aktiv: dauerhaft rot */
+.menu-btn.is-active {
+    color: #FF0000;
+}
+
+/* wenn aktives MENU gehovert: weiß */
+.menu-btn.is-active:hover {
+    color: #ffffff;
+}
+
+/* DROPDOWN und LINIE*/
+.menu-dropdown {
+    position: relative;
+    display: flex;              
+    flex-direction: column;     
+    align-items: flex-end;          /* Richtig den Text rechtsbündig unter dem MENU aus */
+    margin-top: 0;                  
+    padding-top: 24px;
+    padding-right: 0;
+    height: 70px;
+}
+
+/* weiße LINIE */
+.menu-line {
+    position: absolute;
+    top: /*-37px*/ -13px;
+    right: /*-5px*/ -7px;
+    width: 1px;
+    height: 100px;
+    background-color: #ffffff;    /* weiß */
+
+    transform-origin: top;
+    transform: scaleY(0);
+    transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+}
+/*
+                    .navigation.menu-line {}
+                    .navigation{
+                        position: fixed;
+                        top: 20px;
+                        right: 25px;
+                        z-index: 10;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-end;
+                    }
+                    /* falls sie lose fliegen 
+                    .menu-dropdown.is-open ~ .menu-line,
+*/
+                    
+/* öffnen-Zustand weiße LINIE*/
+.menu-dropdown.is-open
+.menu-line {
+    transform: scaleY(1);
+    transition-delay: 0s;
+}
+
+/* SUB-BUTTONS und Fade-In*/
+.sub-btn {
+    font: inherit;
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: -0.05em;
+    margin-top: /*12px*/ 8px;        /* Abstand zwischen den einzelnen Buttons */
+    margin-bottom: 0;
+    margin-right: 0;
+
+    display: inline-block;
+    opacity: 0;
+    transition: color 0.3s ease, opacity 0.4s ease;
+}
+
+.sub-btn:last-child {
+    margin-bottom: 0;           /* letzter Button braucht keinen Abstand nach unten */
+}
+
+/* HOVER für Unterwörter: rot */
+.sub-btn:hover {
+    color: #FF0000;
+}
+
+/* wenn MENU sich öffnet */
+.menu-dropdown.is-open
+.sub-btn {
+    opacity: 1;
+    /* animation: fadeInWords 0.45s forwards; */
+}
+
+/* versetzte Startzeiten für die Unterwörter */
+.menu-dropdown.is-open .sub-btn:nth-of-type(1) { transition-delay: 0.15s; }
+.menu-dropdown.is-open .sub-btn:nth-of-type(2) { transition-delay: 0.3s; }
+.menu-dropdown.is-open .sub-btn:nth-of-type(3) { transition-delay: 0.45s; }
+
+/* wenn MENU sich schließt: alle gleichzeitig, Linie verschwindet */
+.menu-dropdown:not(.is-open)
+.sub-btn {
+    opacity: 0;
+    /* transition: opacity 0.4s ease; */
+}
+
+/* versetzte Startzeiten für die Unterwörter */
+.menu-dropdown:not(.is-open) .sub-btn:nth-of-type(1) { transition-delay: 0.2s; }
+.menu-dropdown:not(.is-open) .sub-btn:nth-of-type(2) { transition-delay: 0.1s; }
+.menu-dropdown:not(.is-open) .sub-btn:nth-of-type(3) { transition-delay: 0s; }
+
+
+.menu-dropdown:not(.is-open)
+.menu-line {
+    transform-origin: top;      /* Zieht sich wieder nach oben hin zurück */
+    transition-delay: 0s;    /* Wartet nicht bis Wörter weg */
+}
+
+
+
+/* ANIMATION fürs Aufploppen 
+@keyframes fadeInWords {
+    from {opacity: 0; }
+    to { opacity: 1; }
+}
+*/
+
+/*
+    .punkt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background-color: #ffffff;
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    transition: transform 1s ease-out, opacity 1s ease-out;
+    pointer-events: none;
+}
+*/
