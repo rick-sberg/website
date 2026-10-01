@@ -78,11 +78,11 @@ function handleSubButtonClick(name) {
 
     // Prüfen mit if/else welches Wort geklickt
     if (name === 'work') {
-        alert('Hier siehst Du bald mein Portfolio!');
+        alert('Portfolio!');
     } else if (name === 'blog') {
-        alert('Willkommen auf meinem Blog!');
+        alert('Blog!');
     } else if (name === 'contact') {
-        alert('uni-weimar.de/KuK + Email: r.schmachtenberg@gmx.net + Instagram: @collections.rick_sberg + LinkedIn');
+        alert('Contact!');
     } 
 }
 
