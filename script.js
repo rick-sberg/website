@@ -4,7 +4,7 @@ const menuDropdown = document.getElementById('menu-dropdown');
 
 // 2. Logik definieren (Ersetze die 'alerts' später durch deine echten Funktionen)
 function handleCrsAction() {
-    alert('CRS wurde aktiviert!');
+    alert('CRS!');
     // Hier kannst du später Code einfügen, der z.B. eine andere Unterseite lädt
 }
 
