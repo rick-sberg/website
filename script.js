@@ -76,16 +76,44 @@ function handleSubButtonClick(name) {
     // schließt MENU
     toggleMenu();
 
+    const workGallery = document.getElementById('work-gallery');
+
     // Prüfen mit if/else welches Wort geklickt
     if (name === 'work') {
-        alert('Portfolio!');
+        // Falls die Galerie schon offen ist: Schließen
+        if (workGallery.classList.contains('is-visible')) {
+            workGallery.classList.remove('is-visible');
+        } else {
+            /* Trick: Wir entfernen die Klasse kurz und fügen sie neu hinzu, 
+               damit der Browser die CSS-Animation sauber neu startet */
+            workGallery.classList.remove('is-visible');
+            void workGallery.offsetWidth; // Zwingt den Browser zum CSS-Reset
+            workGallery.classList.add('is-visible');
+        }
     } else if (name === 'blog') {
         alert('Blog!');
+        workGallery.classList.remove('is-visible');
     } else if (name === 'contact') {
         alert('Contact!');
+        workGallery.classList.remove('is-visible');
     } 
 }
 
+const galleryClose = document.getElementById('gallery-close');
+const workGallery = document.getElementById('work-gallery');
+
+if (galleryClose) {
+    galleryClose.addEventListener('click', function() {
+        workGallery.classList.remove('is-visible');
+    });
+
+    galleryClose.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            workGallery.classList.remove('is-visible');
+        }
+    });
+}
 
 /*
 document.addEventListener('DOMContentLoaded', () => {
