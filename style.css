@@ -200,7 +200,7 @@ body{
     justify-content: flex-start;
     align-items: center;
     gap: 20px;                      /* Abstand zwischen X und FILTER */
-    margin-bottom: 30px;            /* Abstand zu den Bildern */
+    margin-bottom: 10px;            /* Abstand zu den Bildern */
 }
 
 /* Klickbares X */
