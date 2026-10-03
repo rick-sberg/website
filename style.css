@@ -157,14 +157,149 @@ body{
     transition-delay: 0s;    /* Wartet nicht bis Wörter weg */
 }
 
+/* WORK */
 
-
-/* ANIMATION fürs Aufploppen 
-@keyframes fadeInWords {
-    from {opacity: 0; }
-    to { opacity: 1; }
+*, *::before, *::after {
+    box-sizing: border-box;
 }
-*/
+
+.work-gallery {
+    position: fixed;
+    top: 20px;                                  /* gleiche Höhe wie MENU CRS */
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 20px);
+    overflow-y: auto;
+    display: none;
+
+    padding-bottom: 80px;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.work-gallery::-webkit-scrollbar {
+    display: none;
+}
+
+/* aktiv-Zustand, per JS getoggelt */
+.work-gallery.is-visible {
+    display: block !important;
+}
+
+/* innere Inhalts-Box, zentriert alles auf genau 70% Bildschirmbreite */
+.gallery-content {
+    width: 70vw;
+    margin: 0 auto;
+}
+
+/* GALLERY-HEADER*/
+.gallery-header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 20px;                      /* Abstand zwischen X und FILTER */
+    margin-bottom: 30px;            /* Abstand zu den Bildern */
+}
+
+/* Klickbares X */
+.close-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+}
+
+/* X aus Linien */
+.close-icon {
+    position: relative;
+    width: 14px;
+    height: 14px;
+}
+.close-icon span {
+    position: absolute;
+    top: 6px;
+    left: 0;
+    width: 14px;
+    height: 1px;
+    background-color: #ffffff;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+.close-icon span:nth-child(1) {transform: rotate(45deg); }
+.close-icon span:nth-child(2) {transform: rotate(-45deg); }
+
+/* Klickbares FILTER-Wort */
+.filter-btn {
+    font-size: 14px;
+    letter-spacing: -0.05em;
+    cursor: pointer;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+
+/* HOVER Effekte X sowie FILTER */
+.close-btn:hover .close-icon span { background-color: #FF0000;}
+.filter-btn:hover { color: #FF0000; }
+
+/* Spalten-Container */
+.gallery-columns-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 10px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.gallery-column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Style einzelne Grid Elemente */
+.gallery-item {
+    width: 100%;
+    margin-bottom: 10px;
+    opacity: 0;
+}
+
+/* Bilder passen sich automatisch der Spaltenbreite an */
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* --- NEU: FADE-IN ANIMATION FÜR DIE GALERIE --- */
+/* Die Animation, die von unsichtbar (0) zu sichtbar (1) animiert */
+@keyframes bildFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px); /* Leichtes Hochrutschen für einen edlen Effekt */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Sobald die Galerie die Klasse .is-visible bekommt, animieren wir die Spalten */
+.work-gallery.is-visible .gallery-item {
+    animation: bildFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+/* Versetzte Startzeiten für die Bilder, um die Abwärts-Welle zu erzeugen */
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(1) { animation-delay: 0.05s; }
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(2) { animation-delay: 0.10s; }
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(3) { animation-delay: 0.15s; }
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(4) { animation-delay: 0.20s; }
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(5) { animation-delay: 0.25s; }
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(6) { animation-delay: 0.30s; }
+.work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(7) { animation-delay: 0.35s; }
+
 
 /*
     .punkt {
