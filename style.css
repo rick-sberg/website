@@ -204,7 +204,7 @@ body{
 }
 
 /* Klickbares X */
-.close-group {
+.close-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -231,19 +231,97 @@ body{
 }
 .close-icon span:nth-child(1) {transform: rotate(45deg); }
 .close-icon span:nth-child(2) {transform: rotate(-45deg); }
+.close-btn:hover .close-icon span { background-color: #FF0000;}
 
-/* Klickbares FILTER-Wort */
+/* Filter Haupt-Container */
+.filter-menu-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* filter-Button */
 .filter-btn {
     font-size: 14px;
     letter-spacing: -0.05em;
     cursor: pointer;
     color: #ffffff;
-    transition: color 0.3s ease;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: 50px;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+.filter-btn:hover { color: #FF0000; }
+
+/* Wenn Filter-Menü offen > text rot */
+.filter-menu-container.is-open #filter-trigger {
+    color: #FF0000;
 }
 
-/* HOVER Effekte X sowie FILTER */
-.close-btn:hover .close-icon span { background-color: #FF0000;}
-.filter-btn:hover { color: #FF0000; }
+/* Rahmen um filter, wenn geschlossen ABER filter aktiviert */
+.filter-menu-container.has-active-filters:not(.is-open) #filter-trigger {
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+.filter-menu-container.has-active-filters:not(.is-open) .filter-btn {
+    border: 1px solid #ffffff !important;
+    color: #ffffff !important;
+}
+.filter-menu-container.has-active-filters:not(.is-open) .filter-btn:hover {
+    border-color: #FF0000 !important;
+    color: #FF0000 !important;
+}
+
+
+/* Attribute-Bereich */
+.filter-options {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-5px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Wenn filter-menu geöffnet wird: Einblenden */
+.filter-menu-container.is-open .filter-options {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+/* einzelne Attribute */
+.filter-opt {
+    font-size: 14px;
+    letter-spacing: -0.05em;
+    cursor: pointer;
+    color: #ffffff;
+    padding: 3px 10px;
+    border: 1px solid transparent;
+    border-radius: 50px;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+.filter-opt:not(.active):hover {
+    color:#FF0000;
+}
+.filter-opt.active {
+    color: #ffffff !important;
+    border: 1px solid #ffffff !important;
+
+}
+
+/* nicht-aklickbare Trenner / und | */
+.filter-divider,
+.filter-group-divider {
+    font-size: 14px;
+    color: #ffffff;
+    opacity: 0.5;
+    pointer-events: none;
+}
+.filter-group-divider {
+    margin: 0 15px;
+}
 
 /* Spalten-Container */
 .gallery-columns-container {
@@ -274,6 +352,10 @@ body{
     display: block;
 }
 
+.gallery-item.hide {
+    display: none !important;
+}
+
 /* --- NEU: FADE-IN ANIMATION FÜR DIE GALERIE --- */
 /* Die Animation, die von unsichtbar (0) zu sichtbar (1) animiert */
 @keyframes bildFadeIn {
@@ -299,6 +381,7 @@ body{
 .work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(5) { animation-delay: 0.25s; }
 .work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(6) { animation-delay: 0.30s; }
 .work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(7) { animation-delay: 0.35s; }
+
 
 
 /*
