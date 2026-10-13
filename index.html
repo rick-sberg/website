@@ -50,39 +50,74 @@
                         </div>
                     </div>
                     
-                    <span class="filter-btn" id="filter-button" role="button" tabindex="0"> 
+                    <div class="filter-menu-container" id="filter-menu-container">
+                        <!-- Haupt-Trigger -->
+                         <span class="filter-btn" id="filter-button" role="button" tabindex="0"> 
                             filter 
                         </span>
+
+                        <!-- filter-Optionen -->
+                        <div class="filter-options" id="filter-options">
+
+                            <!-- Gruppe 1: Zeit -->
+                            <span class="filter-opt" data-type="recency" data-value="recent"> recent </span>
+                            <!-- <span class="filter-divider"> / </span> -->
+                            <span class="filter-opt active" data-type="recency" data-value="all"> all </span>
+
+                            <span class="filter-group-divider"> | </span>
+
+                            <!-- Gruppe 2: Kategorie --> 
+                            <span class="filter-opt" data-type="category" data-value="architecture"> architecture </span>
+                            <!-- <span class="filter-divider"> / </span> -->
+                            <span class="filter-opt" data-type="category" data-value="design"> design </span>
+                            <!-- <span class="filter-divider"> / </span> -->
+                            <span class="filter-opt" data-type="category" data-value="painting"> painting </span>
+                            <!-- <span class="filter-divider"> / </span> -->
+                            <span class="filter-opt" data-type="category" data-value="essay"> essay </span>
+                            <!-- <span class="filter-divider"> / </span> -->
+                            <span class="filter-opt active" data-type="category" data-value="all"> all </span>
+
+                            <span class="filter-group-divider"> | </span>
+
+                            <!-- Gruppe 3: Urheber -->   
+                            <span class="filter-opt" data-type="author" data-value="collaborative"> collaborative </span>
+                            <!-- <span class="filter-divider"> / </span> -->
+                            <span class="filter-opt active" data-type="author" data-value="all"> all </span>
+                                                
+                        </div>
+                    </div>
+
+                    
                 </div>
                 
                 <div class="gallery-columns-container">
                     <div class="gallery-column">
-                        <div class="gallery-item"><img src="bilder/bild1.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild2.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild3.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild4.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild5.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild6.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild7.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="architecture" data-author="collaborative"><img src="bilder/bild1.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="design" data-author="personal"><img src="bilder/bild2.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="painting" data-author="personal"><img src="bilder/bild3.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="essay" data-author="collaborative"><img src="bilder/bild4.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="architecture" data-author="personal"><img src="bilder/bild5.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="design" data-author="collaborative"><img src="bilder/bild6.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="painting" data-author="collaborative"><img src="bilder/bild7.jpeg" alt="Work 1"></div>
                     </div>
 
                     <div class="gallery-column">
-                        <div class="gallery-item"><img src="bilder/bild8.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild9.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild10.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild11.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild12.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild13.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild14.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="essay" data-author="personal"><img src="bilder/bild8.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="architecture" data-author="collaborative"><img src="bilder/bild9.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="design" data-author="personal"><img src="bilder/bild10.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="painting" data-author="collaborative"><img src="bilder/bild11.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="essay" data-author="collaborative"><img src="bilder/bild12.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="architecture" data-author="personal"><img src="bilder/bild13.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="design" data-author="collaborative"><img src="bilder/bild14.jpeg" alt="Work 1"></div>
                     </div>
 
                     <div class="gallery-column">
-                        <div class="gallery-item"><img src="bilder/bild15.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild16.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild17.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild18.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild19.jpeg" alt="Work 1"></div>
-                        <div class="gallery-item"><img src="bilder/bild20.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="painting" data-author="personal"><img src="bilder/bild15.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="essay" data-author="collaborative"><img src="bilder/bild16.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="architecture" data-author="collaborative"><img src="bilder/bild17.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="design" data-author="personal"><img src="bilder/bild18.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="recent" data-category="painting" data-author="collaborative"><img src="bilder/bild19.jpeg" alt="Work 1"></div>
+                        <div class="gallery-item" data-recency="all" data-category="essay" data-author="personal"><img src="bilder/bild20.jpeg" alt="Work 1"></div>
                     </div>
                 </div>
             </div>
