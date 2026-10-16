@@ -1,3 +1,242 @@
+const cursor = document.querySelector('.custom-cursor');
+const canvas = document.getElementById('cursor-canvas');
+const ctx = canvas.getContext('2d');
+
+let currentRotation = 0;
+let isHovering = false;
+let mouseX = 0;
+let mouseY = 0;
+
+let idleTimer = null;
+let isIdle = false;
+let tendrils = [];
+const IDLE_DELAY = 1000;
+
+let colorTransition = 0;
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+let isShrinking = false;
+
+let isPaused = false;
+
+class Tendril {
+    constructor(x, y, angle, speed = 1.0) {
+        this.x = x;
+        this.y = y;
+        this.angle = angle;
+        this.speed = speed;
+        this.active = true;
+        this.history = [{ x: this.x, y: this.y }];
+        this.id = Math.random();
+        this.parentId = null;
+    }
+
+    update() {
+        if (isPaused) return;
+
+        if (isShrinking) {
+            this.active = false;
+
+            for (let i = 0; i < 6; i++) {
+                if (this.history.length > 0) {
+                this.history.pop();
+                }
+            }
+            return;
+        }
+
+        if (!this.active) return;
+
+        this.angle += (Math.random() - 0.5) * 0.08;
+
+        const nextX = this.x + Math.cos(this.angle) * this.speed;
+        const nextY = this.y + Math.sin(this.angle) * this.speed;
+
+        let pathIsClear = true;
+
+        if (this.history.length > 20) {
+            for (let other of tendrils) {
+                if (other === this || !other.active) continue;
+                if (this.parentId && other.parentId === this.parentId) continue;
+                if (other.id === this.parentId || this.id === other.parentId) continue;
+
+                const dist = Math.hypot(nextX - other.x, nextY - other.y);
+                if (dist < 5) {
+                    pathIsClear = false;
+                    break;
+                }            
+            }
+        }
+
+        if (pathIsClear) {
+            this.x = nextX;
+            this.y = nextY;
+            this.history.push({ x: this.x, y: this.y });
+
+            if (this.history.length > 30 && Math.random() < 0.008 && tendrils.length < 1200) {
+                const branch1 = new Tendril(this.x, this.y, this.angle + 0.5);
+                const branch2 = new Tendril(this.x, this.y, this.angle - 0.5);
+
+                branch1.parentId = this.id;
+                branch2.parentId = this.id;
+
+                branch1.history = [...this.history];
+                branch2.history = [...this.history];
+
+                tendrils.push(branch1, branch2);
+                this.active = false;
+            }
+        }   else {
+            this.active = false;
+        }
+
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+            this.active = false;            
+        }
+    }
+
+    draw() {
+        if (this.history.length < 2) return;
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+
+        const greenAndBlue = Math.round(255 * (1 - colorTransition));
+
+        const opacity = 0.4 + (colorTransition * 0.2);
+
+        ctx.strokeStyle = `rgba(255, ${greenAndBlue}, ${greenAndBlue}, ${opacity})`;
+
+        ctx.moveTo(this.history[0].x, this.history[0].y);
+        for (let i = 1; i < this.history.length; i++) {
+            ctx.lineTo(this.history[i].x, this.history[i].y);
+        }
+        ctx.stroke();
+    }
+}
+
+function startGrowing() {
+    isIdle = true;
+    tendrils = [];
+
+    const baseAngle = Math.random() * Math.PI;
+
+    for (let i = 0; i < 5; i++) {
+        const angle = baseAngle + (i * (2 * Math.PI / 5));
+        
+        const startX = mouseX + Math.cos(angle) * 2;
+        const startY = mouseY + Math.sin(angle) * 2;
+        
+        tendrils.push(new Tendril(startX, startY, angle));        
+    }
+}
+
+function stopGrowing() {
+    isIdle = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    tendrils = [];
+}
+
+document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    
+    cursor.style.left = mouseX + 'px';
+    cursor.style.top = mouseY + 'px';
+
+    isShrinking = true;
+    isIdle = false;
+
+    clearTimeout(idleTimer);
+
+    const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY);
+    if (elementUnderCursor) {
+        const tagName = elementUnderCursor.tagName.toLowerCase();
+        const isInWorkGallery = elementUnderCursor.closest('.work-gallery');
+        const isImage = tagName === 'img' || elementUnderCursor.closest('.gallery-item');
+        const isBackground = (tagName === 'body' || tagName === 'html');
+
+        if (isBackground || (isInWorkGallery && !isImage)) {
+            cursor.classList.remove('active-blend');
+        } else {
+            cursor.classList.add('active-blend');
+        }
+    }
+});
+
+function mainLoop() {
+    const speed = isHovering ? 3.0 : 1.0;
+    currentRotation += speed;
+    cursor.style.setProperty('--cursor-rotation', currentRotation + 'deg');
+
+    if (isHovering) {
+        if (colorTransition < 1) colorTransition += 0.025;
+        if (colorTransition > 1) colorTransition = 1;
+    } else {
+        if (colorTransition > 0) colorTransition -= 0.025;
+        if (colorTransition < 0) colorTransition = 0;
+    }
+
+    if ((isIdle || isShrinking || isPaused) && tendrils.length > 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        tendrils.forEach(tendril => {
+            tendril.update();
+            tendril.draw();
+        });
+
+        if (!isPaused) {
+            tendrils = tendrils.filter(t => t.history.length > 0);
+        }
+        
+    }
+
+    if (!isIdle && !isShrinking && tendrils.length === 0 && !idleTimer) {
+        idleTimer = setTimeout(() => {
+            isShrinking = false;
+            startGrowing();
+            idleTimer = null;
+        }, IDLE_DELAY);
+    }
+
+    if (isShrinking && tendrils.length === 0) {
+        isShrinking = false;
+        idleTimer = null;
+    }
+    
+    requestAnimationFrame(mainLoop);
+}
+
+mainLoop();
+
+const hoverElements = document.querySelectorAll('a, button, .filter, [role="button"]');
+hoverElements.forEach(element => {
+    element.addEventListener('mouseenter', () => {
+        isHovering = true;
+    });
+
+    element.addEventListener('mouseleave', () => {
+        isHovering = false;
+    });
+});
+
+document.addEventListener('mousedown', () => {
+  cursor.classList.add('clicked');
+  isPaused = true;
+});
+
+document.addEventListener('mouseup', () => {
+    isPaused = false;
+    setTimeout(() => {
+        cursor.classList.remove('clicked');
+    }, 120); 
+});
+
 const crsButton = document.getElementById('crs-button');
 const menuButton = document.getElementById('menu-button');
 const menuDropdown = document.getElementById('menu-dropdown');
@@ -234,80 +473,3 @@ function checkActiveFilters() {
         filterMenuContainer.classList.remove('has-active-filters');
     }
 }
-
-
-
-
-/*
-document.addEventListener('DOMContentLoaded', () => {
-    const punkt = document.getElementById('animationsPunkt');
-
-    const KREIS_RADIUS = 20;
-    
-    if (punkt) {
-        window.addEventListener('mousemove', (event) => {
-            // 1. Bildschirm-Mitte und Gesamtmaße ermitteln
-            const breite = window.innerWidth;
-            const hoehe = window.innerHeight;
-            const mitteX = breite / 2;
-            const mitteY = hoehe / 2;
-
-            // 2. Ermittle die aktuelle Position des Mauszeigers
-            const mausX = event.clientX;
-            const mausY = event.clientY;
-
-            // Basis-Zentrum festlegen (relativ zur Bildschirmmitte, wo der Punkt CSS-technisch startet)
-            let zentrumX = 0;
-            let zentrumY = 0;
-
-            // Absolute Bildschirm-Koordinaten des aktuellen Zentrums (für die Winkelberechnung)
-            let zentrumAbsolutX = mitteX;
-            let zentrumAbsolutY = mitteY;
-
-            // 3. Logik für die oberen 30% und unteren 70%
-            // Wir berechnen die Grenze: Wenn die Maus höher als 30% der Fensterhöhe ist
-
-            if (mausY < hoehe * 0.30) {
-                // Maus ist oben! Jetzt prüfen wir links oder rechts:
-                if (mausX < mitteX) {
-                    // Ecke oben links (nahe bei CRS)
-                    zentrumX = -mitteX + 40;
-                    zentrumY = -mitteY + 40;
-                    zentrumAbsolutX = 40;
-                    zentrumAbsolutY = 40;
-                } else {
-                    // Ecke oben rechts (nahe bei Menu)
-                    zentrumX = mitteX - 40;
-                    zentrumY = -mitteY + 40;
-                    zentrumAbsolutX = breite - 40;
-                    zentrumAbsolutY = 40;
-                }
-            } else {
-                 // Maus ist in den unteren 70% -> Punkt geht exakt zurück in die Mitte (0, 0)
-                zielX = 0;
-                zielY = 0;
-                zentrumAbsolutX = mitteX;
-                zentrumAbsolutY = mitteY;
-            }
-
-            // 4. DIE MAGIE: Winkel von der aktuellen Position zur Maus berechnen
-            const deltaX = mausX - zentrumAbsolutX;
-            const deltaY = mausY - zentrumAbsolutY;
-            
-            // atan2 liefert den exakten Winkel im Bogenmaß
-            const winkel = Math.atan2(deltaY, deltaX);
-
-            // 5. Position auf der Kreisbahn berechnen (Trigonometrie: Cosinus & Sinus)
-            const kreisVersatzX = Math.cos(winkel) * KREIS_RADIUS;
-            const kreisVersatzY = Math.sin(winkel) * KREIS_RADIUS;
-
-              // Finale Koordinaten: Zentrum + Position auf dem Kreis
-            const finalX = zentrumX + kreisVersatzX;
-            const finalY = zentrumY + kreisVersatzY;
-            
-            // 6. Position anwenden
-            punkt.style.transform = "translate(calc(-50% + " + finalX + "px), calc(-50% + " + finalY + "px))";
-        });
-    }
-});
-*/
