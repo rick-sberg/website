@@ -437,22 +437,3 @@ html, body, a, button, * {
 .work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(5) { animation-delay: 0.25s; }
 .work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(6) { animation-delay: 0.30s; }
 .work-gallery.is-visible .gallery-column .gallery-item:nth-of-type(7) { animation-delay: 0.35s; }
-
-
-
-/*
-    .punkt {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    background-color: #ffffff;
-    border-radius: 50%;
-
-    transform: translate(-50%, -50%);
-
-    transition: transform 1s ease-out, opacity 1s ease-out;
-    pointer-events: none;
-}
-*/
