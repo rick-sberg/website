@@ -14,6 +14,15 @@
 
         <canvas id="cursor-canvas"></canvas>
 
+        <!-- HINTERGRUND-DIASHOW FÜR MODUS 'OFF' -->
+        <div class="bg-slideshow" id="bg-slideshow">
+            <img src="bilder/bild8.jpeg" alt="" class="bg-slide-img is-active">
+                <img src="bilder/bild9.jpeg" alt="" class="bg-slide-img">
+                <img src="bilder/bild10.jpeg" alt="" class="bg-slide-img">
+            </div>
+        </div>
+
+
         <div class="brand">
             <span class="crs-btn" id="crs-button" role="button" tabindex="0">
                 CRS
@@ -62,32 +71,32 @@
 
                         <!-- filter-Optionen -->
                         <div class="filter-options" id="filter-options">
+                            
+                                <!-- Gruppe 1: Zeit -->
+                                <span class="filter-opt" data-type="recency" data-value="recent"> recent </span>
+                                <!-- <span class="filter-divider"> / </span> -->
+                                <span class="filter-opt active" data-type="recency" data-value="all"> all </span>
 
-                            <!-- Gruppe 1: Zeit -->
-                            <span class="filter-opt" data-type="recency" data-value="recent"> recent </span>
-                            <!-- <span class="filter-divider"> / </span> -->
-                            <span class="filter-opt active" data-type="recency" data-value="all"> all </span>
+                                <span class="filter-group-divider"> | </span>
 
-                            <span class="filter-group-divider"> | </span>
+                                <!-- Gruppe 2: Kategorie --> 
+                                <span class="filter-opt" data-type="category" data-value="architecture"> architecture </span>
+                                <!-- <span class="filter-divider"> / </span> -->
+                                <span class="filter-opt" data-type="category" data-value="design"> design </span>
+                                <!-- <span class="filter-divider"> / </span> -->
+                                <span class="filter-opt" data-type="category" data-value="painting"> painting </span>
+                                <!-- <span class="filter-divider"> / </span> -->
+                                <span class="filter-opt" data-type="category" data-value="essay"> essay </span>
+                                <!-- <span class="filter-divider"> / </span> -->
+                                <span class="filter-opt active" data-type="category" data-value="all"> all </span>
 
-                            <!-- Gruppe 2: Kategorie --> 
-                            <span class="filter-opt" data-type="category" data-value="architecture"> architecture </span>
-                            <!-- <span class="filter-divider"> / </span> -->
-                            <span class="filter-opt" data-type="category" data-value="design"> design </span>
-                            <!-- <span class="filter-divider"> / </span> -->
-                            <span class="filter-opt" data-type="category" data-value="painting"> painting </span>
-                            <!-- <span class="filter-divider"> / </span> -->
-                            <span class="filter-opt" data-type="category" data-value="essay"> essay </span>
-                            <!-- <span class="filter-divider"> / </span> -->
-                            <span class="filter-opt active" data-type="category" data-value="all"> all </span>
+                                <span class="filter-group-divider"> | </span>
 
-                            <span class="filter-group-divider"> | </span>
-
-                            <!-- Gruppe 3: Urheber -->   
-                            <span class="filter-opt" data-type="author" data-value="collaborative"> collaborative </span>
-                            <!-- <span class="filter-divider"> / </span> -->
-                            <span class="filter-opt active" data-type="author" data-value="all"> all </span>
-                                                
+                                <!-- Gruppe 3: Urheber -->   
+                                <span class="filter-opt" data-type="author" data-value="collaborative"> collaborative </span>
+                                <!-- <span class="filter-divider"> / </span> -->
+                                <span class="filter-opt active" data-type="author" data-value="all"> all </span>
+                                           
                         </div>
                     </div>
 
@@ -126,8 +135,26 @@
                 </div>
             </div>
         </div>
-   
+
         <script src="script.js">
         </script>
+
+        <!-- ANIMATION STEUERUNG UNTEN RECHTS -->
+        <div class="animation-menu-container" id="animation-menu-container">
+            <div class="filter-btn" id="animation-button" role="button" tabindex="0">animation</div>
+
+            <div class="anim-options" id="animation-options">
+                <span class="anim-opt active" data-anim="a" role="button" tabindex="0">&#9734</span>
+                <span class="anim-opt" data-anim="b" role="button" tabindex="0">&#43612</span>
+                <span class="anim-opt" data-anim="off" role="button" tabindex="0">off</span>
+            </div>
+        </div>
+
+        <!-- HINWEIS FÜR ZEICHENMODUS (UNTEN MITTE) -->
+        <div class="draw-hint" id="draw-hint">
+            <div>halte &#127350; zum gl&#228tten</div>
+            <div>klicke &#127367; zum l&#246schen</div>
+            <div>&#127362; zum speichern</div>
+        </div>
     </body>
 </html>
