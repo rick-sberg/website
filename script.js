@@ -22,8 +22,19 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 let isShrinking = false;
-
 let isPaused = false;
+
+// --- ZUSTANDSVARIABLEN FÜR MODUS A, B UND OFF ---
+let currentAnimationMode = 'a'; // 'a' = Wurzeln, 'b' = Zeichnen, 'off' = Aus
+let isDrawing = false;
+let isSmoothing = false;
+let smoothX = 0;
+let smoothY = 0;
+let drawPaths = [];
+let currentPath = null;
+let isFadingOutDrawing = false;
+let drawingOpacity = 0.85;
+
 
 class Tendril {
     constructor(x, y, angle, speed = 1.0) {
@@ -45,7 +56,7 @@ class Tendril {
 
             for (let i = 0; i < 6; i++) {
                 if (this.history.length > 0) {
-                this.history.pop();
+                    this.history.pop();
                 }
             }
             return;
@@ -92,7 +103,7 @@ class Tendril {
                 tendrils.push(branch1, branch2);
                 this.active = false;
             }
-        }   else {
+        } else {
             this.active = false;
         }
 
@@ -107,7 +118,6 @@ class Tendril {
         ctx.lineWidth = 1;
 
         const greenAndBlue = Math.round(255 * (1 - colorTransition));
-
         const opacity = 0.4 + (colorTransition * 0.2);
 
         ctx.strokeStyle = `rgba(255, ${greenAndBlue}, ${greenAndBlue}, ${opacity})`;
@@ -142,6 +152,24 @@ function stopGrowing() {
     tendrils = [];
 }
 
+function clearAllCanvas() {
+    isIdle = false;
+    isShrinking = false;
+    tendrils = [];
+    drawPaths = [];
+    currentPath = null;
+    isDrawing = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function fadeOutCanvasDrawing() {
+    if (drawPaths.length === 0) return;
+    isDrawing = false;
+    currentPath = null;
+    isFadingOutDrawing = true;
+}
+
+// --- MOUSE MOVE ---
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
@@ -149,17 +177,12 @@ document.addEventListener('mousemove', (e) => {
     cursor.style.left = mouseX + 'px';
     cursor.style.top = mouseY + 'px';
 
-    isShrinking = true;
-    isIdle = false;
-
-    clearTimeout(idleTimer);
-
     const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY);
     if (elementUnderCursor) {
         const tagName = elementUnderCursor.tagName.toLowerCase();
         const isInWorkGallery = elementUnderCursor.closest('.work-gallery');
         const isImage = tagName === 'img' || elementUnderCursor.closest('.gallery-item');
-        const isBackground = (tagName === 'body' || tagName === 'html');
+        const isBackground = (tagName === 'body' || tagName === 'html') && currentAnimationMode !== 'off';
 
         if (isBackground || (isInWorkGallery && !isImage)) {
             cursor.classList.remove('active-blend');
@@ -167,8 +190,30 @@ document.addEventListener('mousemove', (e) => {
             cursor.classList.add('active-blend');
         }
     }
+
+    // Modus A: Wurzeln schrumpfen lassen
+    if (currentAnimationMode === 'a') {
+        isShrinking = true;
+        isIdle = false;
+        clearTimeout(idleTimer);
+        idleTimer = null;
+    }
+
+    // Modus B: Auf Leinwand malen
+    if (currentAnimationMode === 'b' && isDrawing && currentPath) {
+        if (isSmoothing) {
+            smoothX += (mouseX - smoothX) * 0.12;
+            smoothY += (mouseY - smoothY) * 0.12;
+            currentPath.push({ x: smoothX, y: smoothY });
+        } else {
+            smoothX = mouseX;
+            smoothY = mouseY;
+            currentPath.push({ x: mouseX, y: mouseY });
+        }
+    }
 });
 
+// --- HAUPTSCHLEIFE ---
 function mainLoop() {
     const speed = isHovering ? 3.0 : 1.0;
     currentRotation += speed;
@@ -182,96 +227,211 @@ function mainLoop() {
         if (colorTransition < 0) colorTransition = 0;
     }
 
-    if ((isIdle || isShrinking || isPaused) && tendrils.length > 0) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // MODUS A: WURZEL-ANIMATION
+    if (currentAnimationMode === 'a') {
+        if ((isIdle || isShrinking || isPaused) && tendrils.length > 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        tendrils.forEach(tendril => {
-            tendril.update();
-            tendril.draw();
-        });
+            tendrils.forEach(tendril => {
+                tendril.update();
+                tendril.draw();
+            });
 
-        if (!isPaused) {
-            tendrils = tendrils.filter(t => t.history.length > 0);
+            if (!isPaused) {
+                tendrils = tendrils.filter(t => t.history.length > 0);
+            }
         }
-        
-    }
 
-    if (!isIdle && !isShrinking && tendrils.length === 0 && !idleTimer) {
-        idleTimer = setTimeout(() => {
+        if (!isIdle && !isShrinking && tendrils.length === 0 && !idleTimer) {
+            idleTimer = setTimeout(() => {
+                if (currentAnimationMode === 'a') {
+                    isShrinking = false;
+                    startGrowing();
+                }
+                idleTimer = null;
+            }, IDLE_DELAY);
+        }
+
+        if (isShrinking && tendrils.length === 0) {
             isShrinking = false;
-            startGrowing();
             idleTimer = null;
-        }, IDLE_DELAY);
+        }
     }
 
-    if (isShrinking && tendrils.length === 0) {
-        isShrinking = false;
-        idleTimer = null;
+    // MODUS B: LEINWAND ZEICHNEN
+    if (currentAnimationMode === 'b') {
+        if (isDrawing && isSmoothing && currentPath) {
+            const dist = Math.hypot(mouseX - smoothX, mouseY - smoothY);
+            if (dist > 0.5) {
+                smoothX += (mouseX - smoothX) * 0.12;
+                smoothY += (mouseY - smoothY) * 0.12;
+                currentPath.push({ x: smoothX, y: smoothY });
+            }
+        }
+
+        // Sanftes Ausblenden nach Drücken von X
+        if (isFadingOutDrawing) {
+            drawingOpacity -= 0.03; // Geschwindigkeit des Fades (kleiner = langsamer)
+            if (drawingOpacity <= 0) {
+                drawingOpacity = 0.85;
+                isFadingOutDrawing = false;
+                drawPaths = [];
+                currentPath = null;
+            }
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.lineWidth = 1.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = `rgba(255, 255, 255, ${drawingOpacity})`;
+
+        drawPaths.forEach(path => {
+            if (path.length < 2) return;
+            ctx.beginPath();
+            ctx.moveTo(path.x, path.y);
+            for (let i = 1; i < path.length; i++) {
+                ctx.lineTo(path[i].x, path[i].y);
+            }
+            ctx.stroke();
+        });
     }
-    
+
     requestAnimationFrame(mainLoop);
 }
 
 mainLoop();
 
-const hoverElements = document.querySelectorAll('a, button, .filter, [role="button"]');
-hoverElements.forEach(element => {
-    element.addEventListener('mouseenter', () => {
+// --- HOVER-ERKENNUNG FÜR CURSOR-STERN (INKL. NEUER BUTTONS) ---
+document.addEventListener('mouseover', (e) => {
+    if (e.target.closest('a, button, .filter, .filter-btn, .filter-opt, .anim-opt, [role="button"]')) {
         isHovering = true;
-    });
-
-    element.addEventListener('mouseleave', () => {
-        isHovering = false;
-    });
+    }
 });
 
-document.addEventListener('mousedown', () => {
-  cursor.classList.add('clicked');
-  isPaused = true;
+document.addEventListener('mouseout', (e) => {
+    if (e.target.closest('a, button, .filter, .filter-btn, .filter-opt, .anim-opt, [role="button"]')) {
+        isHovering = false;
+    }
+});
+
+// --- KLICK-STEUERUNG ---
+document.addEventListener('mousedown', (e) => {
+    cursor.classList.add('clicked');
+
+    if (currentAnimationMode === 'a') {
+        isPaused = true;
+    }
+
+    if (currentAnimationMode === 'b') {
+        if (e.target.closest('a, button, .filter, .filter-btn, .filter-opt, .anim-opt, .navigation, .brand, .work-gallery, [role="button"]')) {
+            return;
+        }
+
+        if (!isDrawing) {
+            isDrawing = true;
+            smoothX = e.clientX;
+            smoothY = e.clientY;
+            currentPath = [{ x: smoothX, y: smoothY }];
+            drawPaths.push(currentPath);
+        } else {
+            isDrawing = false;
+            currentPath = null;
+        }
+    }
 });
 
 document.addEventListener('mouseup', () => {
-    isPaused = false;
+    if (currentAnimationMode === 'a') {
+        isPaused = false;
+    }
     setTimeout(() => {
         cursor.classList.remove('clicked');
     }, 120); 
 });
 
+// --- TASTATUR 'G' (GLÄTTEN), 'X' (LÖSCHEN), 'S' (SPEICHERN) ---
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'g' || e.key === 'G') {
+        isSmoothing = true;
+    }
+
+    if (currentAnimationMode === 'b') {
+        // X -> Leinwand sanft ausblenden
+        if (e.key === 'x' || e.key === 'X') {
+            fadeOutCanvasDrawing();
+        }
+
+        // S -> Zeichnung als PNG herunterladen
+        if (e.key === 's' || e.key === 'S') {
+            saveDrawingAsPNG();
+        }
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'g' || e.key === 'G') {
+        isSmoothing = false;
+    }
+});
+
+// Hilfsfunktion: Erstellt ein PNG mit blauem Hintergrund (#0000FF) und weißer Linie
+function saveDrawingAsPNG() {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+
+    // 1. Blauen Hintergrund füllen (da dein body-Blau im CSS liegt und das echte Canvas transparent ist)
+    tempCtx.fillStyle = '#0000FF';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    // 2. Deine gezeichneten Linien darüber kopieren
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // 3. Download-Dialog im Browser auslösen
+    const link = document.createElement('a');
+    link.download = 'zeichnung.png';
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+}
+
+
+// --- NAVIGATION OBEN ---
 const crsButton = document.getElementById('crs-button');
 const menuButton = document.getElementById('menu-button');
 const menuDropdown = document.getElementById('menu-dropdown');
 
-// 2. Logik definieren
 function handleCrsAction() {
     alert('CRS!');
 }
 
-// 3. Die Funktion schreiben, die das Menü öffnet/schließt
 function toggleMenu() {
     menuButton.classList.toggle('is-active');
     menuDropdown.classList.toggle('is-open');
 }
 
-// 4. Event-Listener für den Klick
-crsButton.addEventListener('click', handleCrsAction);
-menuButton.addEventListener('click', toggleMenu);
+if (crsButton) {
+    crsButton.addEventListener('click', handleCrsAction);
+    crsButton.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleCrsAction();
+        }
+    });
+}
 
-// 5. Event-Listener für die Tastatur (barrierefrei)
-crsButton.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        handleCrsAction();
-    }
-});
+if (menuButton) {
+    menuButton.addEventListener('click', toggleMenu);
+    menuButton.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleMenu();
+        }
+    });
+}
 
-menuButton.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        toggleMenu();
-    }
-});
-
-/* SCHLIESSEN BEI KLICK AUSSERHALB MENU*/
+/* SCHLIESSEN BEI KLICK AUSSERHALB MENU */
 document.addEventListener('click', function(event) {
     const navigationContainer = document.querySelector('.navigation');
     
@@ -300,9 +460,6 @@ subButtons.forEach(function(button) {
 });
 
 function handleSubButtonClick(name) {
-    console.log("Untermenü-Button geklickt: " + name);
-    
-    // Schließt das Hauptmenü
     menuButton.classList.remove('is-active');
     menuDropdown.classList.remove('is-open');
 
@@ -310,10 +467,18 @@ function handleSubButtonClick(name) {
 
     if (name === 'work') {
         if (workGallery.classList.contains('is-visible')) {
-            resetAllFilters(); 
-            workGallery.classList.remove('is-visible'); 
+            document.body.classList.remove('work-open');
+            workGallery.classList.add('is-closing');
+            workGallery.classList.remove('is-visible');
+            setTimeout(() => {
+                workGallery.classList.remove('is-closing');
+                if (!workGallery.classList.contains('is-visible')) {
+                    resetAllFilters();
+                }
+            }, 450);
         } else {
-            // Falls sie zu war, stellen wir sicher, dass sie sauber ohne Filter öffnet
+            document.body.classList.add('work-open');
+            workGallery.classList.remove('is-closing');
             resetAllFilters();
             workGallery.classList.remove('is-visible');
             void workGallery.offsetWidth; 
@@ -334,19 +499,29 @@ const galleryClose = document.getElementById('gallery-close');
 const workGallery = document.getElementById('work-gallery');
 
 if (galleryClose) {
-    galleryClose.addEventListener('click', function() {
-        resetAllFilters(); 
-        workGallery.classList.remove('is-visible'); 
-    });
+    function closeWorkGallerySmoothly() {
+        document.body.classList.remove('work-open');
+        workGallery.classList.add('is-closing');
+        workGallery.classList.remove('is-visible');
+
+        setTimeout(() => {
+            workGallery.classList.remove('is-closing');
+            if (!workGallery.classList.contains('is-visible')) {
+                resetAllFilters();
+            }
+        }, 450);
+    }
+
+    galleryClose.addEventListener('click', closeWorkGallerySmoothly);
 
     galleryClose.addEventListener('keydown', function(event) {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            resetAllFilters();
-            workGallery.classList.remove('is-visible');
+            closeWorkGallerySmoothly();
         }
     });
 }
+
 
 // --- FILTER-MENU-STEUERUNG ---
 const filterTrigger = document.getElementById('filter-button'); 
@@ -421,7 +596,6 @@ function applyMultiFilters() {
 
         if (matchRecency && matchCategory && matchAuthor) {
             item.classList.remove('hide');
-            
             item.style.animation = 'none';
             void item.offsetWidth; 
             item.style.animation = null;
@@ -431,7 +605,6 @@ function applyMultiFilters() {
     });
 }
 
-// Setzt alle Auswahlen wieder auf die "all"-Standardwerte zurück
 function resetAllFilters() {
     filterOptions.forEach(function(opt) {
         opt.classList.remove('active');
@@ -472,4 +645,107 @@ function checkActiveFilters() {
     } else {
         filterMenuContainer.classList.remove('has-active-filters');
     }
+}
+
+// --- ANIMATION-MENÜ-STEUERUNG UNTEN RECHTS ---
+document.addEventListener('DOMContentLoaded', () => {
+    const animTrigger = document.getElementById('animation-button');
+    const animMenuContainer = document.getElementById('animation-menu-container');
+    const animOptions = document.querySelectorAll('.anim-opt');
+    const drawHint = document.getElementById('draw-hint');
+
+    if (animTrigger && animMenuContainer) {
+        animTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            animMenuContainer.classList.add('is-open');
+        });
+
+        animTrigger.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                animMenuContainer.classList.add('is-open');
+            }
+        });
+
+        animOptions.forEach((opt) => {
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                const clickedMode = opt.getAttribute('data-anim');
+
+                if (clickedMode === currentAnimationMode) {
+                    animMenuContainer.classList.remove('is-open');
+                } else {
+                    animOptions.forEach(item => item.classList.remove('active'));
+                    opt.classList.add('active');
+
+                    currentAnimationMode = clickedMode;
+                    clearTimeout(idleTimer);
+                    idleTimer = null;
+                    clearAllCanvas();
+
+                    if (drawHint) {
+                        if (currentAnimationMode === 'b') {
+                            drawHint.classList.add('is-visible');
+                        } else {
+                            drawHint.classList.remove('is-visible');
+                        }
+                    }
+
+                    // Hintergrund-Diashow nur bei 'off' starten
+                    if (currentAnimationMode === 'off') {
+                        startBgSlideshow();
+                    } else {
+                        stopBgSlideshow();
+                    }
+                }
+            });
+
+            opt.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    opt.click();
+                }
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            if (animMenuContainer.classList.contains('is-open') && !animMenuContainer.contains(e.target)) {
+                animMenuContainer.classList.remove('is-open');
+            }
+        });
+    }
+});
+
+// --- HINTERGRUND-DIASHOW FÜR MODUS 'OFF' (MANUELLE AUSWAHL AUS HTML) ---
+const bgSlideshow = document.getElementById('bg-slideshow');
+let slideshowTimer = null;
+let currentSlideIndex = 0;
+
+function startBgSlideshow() {
+    if (!bgSlideshow) return;
+    
+    // Liest nur die Bilder aus, die du selbst im HTML in #bg-slideshow eingetragen hast
+    const slideElements = bgSlideshow.querySelectorAll('.bg-slide-img');
+    if (slideElements.length === 0) return;
+
+    bgSlideshow.classList.add('is-visible');
+
+    clearInterval(slideshowTimer);
+
+    // Alle 5 Sekunden (5000 ms) sanft zum nächsten Bild wechseln
+    slideshowTimer = setInterval(() => {
+        if (slideElements.length <= 1) return;
+
+        slideElements[currentSlideIndex].classList.remove('is-active');
+        currentSlideIndex = (currentSlideIndex + 1) % slideElements.length;
+        slideElements[currentSlideIndex].classList.add('is-active');
+    }, 5000);
+}
+
+function stopBgSlideshow() {
+    if (!bgSlideshow) return;
+    bgSlideshow.classList.remove('is-visible');
+    clearInterval(slideshowTimer);
+    slideshowTimer = null;
 }
